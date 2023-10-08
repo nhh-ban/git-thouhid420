@@ -133,6 +133,33 @@ galaxies <- read_csv("mydata.csv", skip = 13, comment = "---")
 # observations.
 
 
+### Question 3---##############
+
+# 1. Plotting a histogram of linear diameters (a_26) to visualize size distribution
+p1 <- ggplot(galaxies, aes(x=a_26)) +
+  geom_histogram(binwidth=1, fill="blue", alpha=0.5) +
+  labs(title="Distribution of Linear Diameter (a_26)",
+       x="Linear Diameter (kpc)",
+       y="Frequency") +
+  theme_minimal()
+
+# Display the first plot
+print(p1)
+
+# 2. Plotting a scatter plot of absolute magnitude (m_b) vs. linear diameter (a_26)
+p2 <- ggplot(galaxies, aes(x=a_26, y=m_b)) +
+  geom_point(alpha=0.5) +
+  labs(title="Absolute Magnitude vs. Linear Diameter",
+       x="Linear Diameter (kpc)",
+       y="Absolute Magnitude (m_b)") +
+  theme_minimal()
+
+# Display the second plot
+print(p2)
+
+# You may save the plots as well
+ggsave("distribution_of_linear_diameter.png", plot=p1)
+ggsave("absolute_magnitude_vs_linear_diameter.png", plot=p2)
 
 
 
