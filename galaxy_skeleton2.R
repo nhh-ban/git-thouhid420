@@ -16,7 +16,7 @@ library(tidyverse)    # Contains most of what we need.
 # the file does not end with an "end of line"-character (EOL). This does not
 # seem to pose a problem later, and it seems that we can silece the warning by
 # switchin off the "warn"-argument. Do that if you wish.
-raw_file <- readLines(con = "?")
+raw_file <- readLines(con = "suites_dw_Table1.txt")
 
 # Identify the line number L of the separator line between the column names and
 # the rest of the data table.
@@ -31,15 +31,16 @@ raw_file <- readLines(con = "?")
 
 # What do you need to replace the two question marks with in order to extract
 # the first two letters?
-substr(x = raw_file, start = ?, stop = ?)
+substr(x = raw_file, start = "--", stop = "--")
 
 # The next step is then to find out *which* line starts with "--", and pick out
 # the first one. This can be done in a nice little pipe, where you have to fill
 # out the question marks and the missing function names:
 L <- 
-  (substr(x = raw_file, start = ?, stop = ?) == "?") %>% 
-  function_that_returns_the_index_of_all_TRUES %>% 
-  function_that_picks_out_the_minimum_value
+  (substr(x = raw_file, start = 1, stop = 2) == "--") %>% 
+  which() %>% 
+  min(na.rm = TRUE)
+
 
 # Save the variable descriptions (i.e. the information in lines 1:(L-2)) in a
 # text-file for future reference using the cat()-function. The first argument is
@@ -47,7 +48,14 @@ L <-
 # "raw_file"-vector on a separate line we also provide the sep-argument, where
 # we put the "end-of-line"-character "\n". We also need to come up with a file
 # name. Replace the question marks:
-cat(?, sep = "\n", file = "?")
+# Save the variable descriptions (i.e. the information in lines 1:(L-2)) in a
+# text-file for future reference using the cat()-function. The first argument is
+# the information that we want to print out. In order to get each element in the
+# "raw_file"-vector on a separate line we also provide the sep-argument, where
+# we put the "end-of-line"-character "\n". We also need to come up with a file
+# name. Replace the question marks:
+cat(raw_file[1:(L - 2)], sep = "\n", file = "variables.txt")
+
 
 # Extract the variable names (i.e. line (L-1)), store the names in a vector.
 
@@ -64,9 +72,28 @@ cat(?, sep = "\n", file = "?")
 # apply the str_trim()-function (also in the stringr-package) to get rid of all
 # the empty space. Replace the question mark below:
 variable_names <- 
-  str_split(string = ?, pattern = "\\|") %>% 
+  str_split(string = raw_file[L-1], pattern = "\\|") %>% 
   unlist() %>% 
   str_trim()
+variable_names
+# Extract the variable names (i.e. line (L-1)), store the names in a vector.
+
+# This is a little bit dirty. We want to *split* the string in raw_data[L-1]
+# *by* the character "|", and then we want to *trim* away all the leading and
+# trailing white spaces. The first step can be accomplished using the
+# str_split()-function in the stringr-package (this is already loaded through
+# tidyverse), but there is a delicate detail here. The "|"-character has special
+# meaning in R ("or"), so it must be *escaped*, meaning that we tell R that it
+# should be interpreted as a normal character. We do that by adding two forward
+# slashes in front of it. This function returns a list, with one element for
+# each input element. We only send one string in, and hence get only one list
+# element out (check that!). We just unlist it to get out the vector. Then we
+# apply the str_trim()-function (also in the stringr-package) to get rid of all
+# the empty space. Replace the question mark below:
+#variable_names <- 
+ # str_split(string = ?, pattern = "\\|") %>% 
+  #unlist() %>% 
+  #str_trim()
 
 # Read the data. One way to do this is to rewrite the data to a new .csv-file
 # with comma-separators for instance using cat() again, with the variable names
@@ -79,7 +106,7 @@ variable_names <-
 # super for this kind of search-and-replace. Replace the question mark below.
 
 comma_separated_values <- 
-  ? %>% 
+  raw_file %>% 
   gsub("\\|", ",", .) %>% 
   gsub(" ", "", .)
 
@@ -92,15 +119,49 @@ comma_separated_values_with_names <-
     comma_separated_values)    
 
 # Replace the question mark and come up with a file name
-cat(?, sep = "\n", file = "?")
+# Replace the question mark and come up with a file name
+cat(comma_separated_values_with_names, sep = "\n", file = "mydata.csv")
+
 
 # Read the file back in as a normal csv-file. The readr-package is part of
 # tidyverse, so it is already loaded.
-galaxies <- read_csv("?")
+galaxies <- read_csv("mydata.csv", skip = 13, comment = "---")
 
 
 # You should now have a nice, clean data frame with galaxies and their
 # characteristics in memory. As of March 2022 it should contain 796
 # observations.
+
+
+### Question 3---##############
+
+# 1. Plotting a histogram of linear diameters (a_26) to visualize size distribution
+p1 <- ggplot(galaxies, aes(x=a_26)) +
+  geom_histogram(binwidth=1, fill="blue", alpha=0.5) +
+  labs(title="Distribution of Linear Diameter (a_26)",
+       x="Linear Diameter (kpc)",
+       y="Frequency") +
+  theme_minimal()
+
+# Display the first plot
+print(p1)
+
+# 2. Plotting a scatter plot of absolute magnitude (m_b) vs. linear diameter (a_26)
+p2 <- ggplot(galaxies, aes(x=a_26, y=m_b)) +
+  geom_point(alpha=0.5) +
+  labs(title="Absolute Magnitude vs. Linear Diameter",
+       x="Linear Diameter (kpc)",
+       y="Absolute Magnitude (m_b)") +
+  theme_minimal()
+
+# Display the second plot
+print(p2)
+
+# You may save the plots as well
+ggsave("distribution_of_linear_diameter.png", plot=p1)
+ggsave("absolute_magnitude_vs_linear_diameter.png", plot=p2)
+
+
+
 
 
